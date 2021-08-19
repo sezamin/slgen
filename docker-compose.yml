@@ -1,0 +1,46 @@
+version: '3.7'
+services:
+    php:
+        build: ./docker/php
+        container_name: slgen
+        working_dir: /var/www
+        volumes:
+            - ./:/var/www/
+        networks:
+            - slgen
+    web:
+        image: nginx:alpine
+        container_name: slgen-web
+        ports:
+            - "8095:80"
+        volumes:
+            - ./:/var/www
+            - ./docker/nginx/log:/var/log/nginx
+            - ./docker/nginx/conf.d/:/etc/nginx/conf.d/
+        networks:
+            - slgen
+    db:
+        image: mysql:8.0
+        container_name: slgen-db
+        command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+        environment:
+            - MYSQL_ROOT_HOST=%
+            - MYSQL_DATABASE=slgen
+            - MYSQL_ROOT_PASSWORD=dev
+            - MYSQL_USER=dev
+            - MYSQL_PASSWORD=dev
+        volumes:
+            - slgen:/var/lib/mysql
+        networks:
+            - slgen
+        ports:
+            - "3301:3306"
+
+#Docker Networks
+networks:
+    slgen:
+        driver: bridge
+
+#Docker Volumes
+volumes:
+    slgen:
